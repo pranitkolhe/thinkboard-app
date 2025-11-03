@@ -1,45 +1,65 @@
 import React, { useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
-import NoteCard from '../components/NoteCard';
-import NotesNotFound from '../components/NotesNotFound';
-import RateLimitesUI from '../components/RateLimitesUI';
-import api from '../lib/axios';
+import Navbar from '@/components/Navbar.jsx'; // Use alias
+import NoteCard from '@/components/NoteCard.jsx'; // Use alias
+import NotesNotFound from '@/components/NotesNotFound.jsx'; // Use alias
+import RateLimitesUI from '@/components/RateLimitesUI.jsx'; // Use alias
+import api from '@/lib/axios.js'; // Use alias
 import toast from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext.jsx'; // 1. Import useAuth
 
 const HomePage = () => {
+    // 2. Get user and global loading state from the context
+    const { user, loading: authLoading } = useAuth(); 
+    
     const [notes, setNotes] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // This is now for the *notes fetch*
     const [isRateLimited, setIsRateLimited] = useState(false);
 
     useEffect(() => {
         const fetchNotes = async () => {
-            setLoading(true);
+            setLoading(true); // Start notes-specific loading
+            setIsRateLimited(false);
             try {
                 const res = await api.get("/notes");
                 setNotes(res.data);
-                setIsRateLimited(false);
             } catch (error) {
                 if (error.response?.status === 429) {
                     setIsRateLimited(true);
-                } else {
+                } else if (error.response?.status !== 401) { 
+                    // Only show error if it's not a 401
                     toast.error("Failed to load notes.");
                 }
             } finally {
-                setLoading(false);
+                setLoading(false); // Stop notes-specific loading
             }
         };
-        fetchNotes();
-    }, []);
+
+        // 3. Check if auth is finished *and* if a user exists
+        if (!authLoading) {
+            if (user) {
+                // If logged in, fetch notes
+                fetchNotes();
+            } else {
+                // If not logged in, stop all loading
+                setLoading(false); 
+                setNotes([]);
+            }
+        }
+    }, [user, authLoading]); // 4. Re-run this effect when auth state changes
 
     const renderContent = () => {
         if (isRateLimited) {
             return <RateLimitesUI />;
         }
-        if (loading) {
-            return <div className='text-center text-primary py-20'>Loading Notes...</div>;
+        
+        // 5. Show a spinner if *either* auth or notes are loading
+        if (authLoading || loading) {
+            return (
+                <div className='text-center text-primary py-20'>
+                    <span className="loading loading-spinner loading-lg"></span>
+                </div>
+            );
         }
-
-         {notes.length === 0  && !isRateLimited && < NotesNotFound />}   
 
         if (notes.length > 0) {
             return (
@@ -50,6 +70,8 @@ const HomePage = () => {
                 </div>
             );
         }
+
+        // If not loading and no notes (this also covers the logged-out state)
         return <NotesNotFound />;
     };
 
@@ -67,8 +89,6 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-
 // import React, { useEffect, useState } from 'react'
 
 // import Navbar from '../components/Navbar'
