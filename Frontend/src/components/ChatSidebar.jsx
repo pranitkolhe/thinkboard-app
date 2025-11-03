@@ -4,7 +4,7 @@ import Message from './Message';
 import MessageInput from './MessageInput';
 import { useAuth } from '../context/AuthContext';
 
-const SOCKET_SERVER_URL = "http://localhost:3000";
+const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
 const ChatSidebar = ({ noteId, noteTitle, initialMessages }) => {
   const [messages, setMessages] = useState(initialMessages || []);
