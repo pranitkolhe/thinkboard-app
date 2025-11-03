@@ -10,7 +10,7 @@ const ChatSidebar = ({ noteId, noteTitle, initialMessages }) => {
   const [messages, setMessages] = useState(initialMessages || []);
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const { user, session } = useAuth(); // Get the current user
+  const { user, session } = useAuth();
 
   useEffect(() => {
     setMessages(initialMessages || []);
@@ -21,8 +21,8 @@ const ChatSidebar = ({ noteId, noteTitle, initialMessages }) => {
   }, [messages]);
 
   useEffect(() => {
-    // --- THIS IS THE FIX ---
-    // Tell the client to connect using the specific path
+    // --- THIS IS THE CRITICAL FIX ---
+    // It tells the client to connect using the /api/ path
     socketRef.current = io(SOCKET_SERVER_URL, {
       path: "/api/socket.io/" 
     });
@@ -63,7 +63,6 @@ const ChatSidebar = ({ noteId, noteTitle, initialMessages }) => {
       </div>
       <div className='flex-grow p-4 overflow-y-auto space-y-4'>
         {messages.map((msg) => (
-          // Pass 'isCurrentUser' prop to the Message component
           <Message 
             key={msg.id} 
             message={msg} 
