@@ -31,6 +31,7 @@ const io = new Server(server, {
     origin: allowedOrigins, 
     methods: ["GET", "POST"] 
   },
+  path: "/api/socket.io/"
 });
 
 // 2. Use the allowedOrigins array in your Express CORS config
