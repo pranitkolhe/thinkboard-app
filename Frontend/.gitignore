@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Ignore node_modules in both projects
+Backend/node_modules
+Frontend/node_modules
+
+# Ignore all .env files in all projects
+Backend/.env
+Frontend/.env
+
+# Ignore Vite cache and build output
+Frontend/dist
+Frontend/.vite
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
