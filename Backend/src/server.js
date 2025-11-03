@@ -6,19 +6,35 @@ import { Server } from 'socket.io';
 import { supabase } from './config/supabaseClient.js';
 import notesRoutes from "./routes/notesRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
-import rateLimitter from "./middleware/rateLimitter.js"; // Assuming rateLimitter.js exists
+import rateLimitter from "./middleware/rateLimitter.js";
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
-});
-
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// --- THIS IS THE FIX ---
+// Define all origins that are allowed to make requests
+const localOrigin = "http://localhost:5173";
+const deployedOrigin = process.env.FRONTEND_URL; // This will be your Vercel URL
+
+const allowedOrigins = [localOrigin];
+if (deployedOrigin) {
+  allowedOrigins.push(deployedOrigin);
+}
+// --- END OF FIX ---
+
+// 1. Use the allowedOrigins array in your Socket.IO CORS config
+const io = new Server(server, {
+  cors: { 
+    origin: allowedOrigins, 
+    methods: ["GET", "POST"] 
+  },
+});
+
+// 2. Use the allowedOrigins array in your Express CORS config
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 app.use("/api", rateLimitter); // Apply rate limiter to all api routes
 
@@ -51,9 +67,9 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT,'0.0.0.0', () => {
+// Listen on '0.0.0.0' for Vercel compatibility
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server listening on port: http://localhost:${PORT}`);
 });
-
 
 export default app;
