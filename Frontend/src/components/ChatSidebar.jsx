@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
-import Message from './Message';
-import MessageInput from './MessageInput';
-import { useAuth } from '../context/AuthContext';
+import Message from '@/components/Message.jsx'; // Use alias
+import MessageInput from '@/components/MessageInput.jsx'; // Use alias
+import { useAuth } from '@/context/AuthContext.jsx'; // Use alias
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
@@ -21,7 +21,13 @@ const ChatSidebar = ({ noteId, noteTitle, initialMessages }) => {
   }, [messages]);
 
   useEffect(() => {
-    socketRef.current = io(SOCKET_SERVER_URL);
+    // --- THIS IS THE FIX ---
+    // Tell the client to connect using the specific path
+    socketRef.current = io(SOCKET_SERVER_URL, {
+      path: "/api/socket.io/" 
+    });
+    // --- END OF FIX ---
+
     const socket = socketRef.current;
     socket.emit('join-room', noteId);
 
